@@ -1,0 +1,56 @@
+---
+- name: Configuring jenkins master server 
+  hosts: localhost
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: setting up required files for deb
+    shell: "bash jen.sh"
+    args:
+      executable: /bin/bash
+  - name: Update repositories cache
+    apt:
+     update_cache: yes      
+  - name: Installing required packages on jenkins master server....
+    apt: 
+     name: 
+      - openjdk-11-jre
+      - jenkins
+     state: present  
+  - name: Checking jenkins service status...
+    service:
+     name: jenkins
+     state: started
+
+  tags: tag-master
+
+- name: Configuring jenkins agent
+  hosts: agent
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: Update repositories cache
+    apt:
+     update_cache: yes      
+  - name: Installing required packages on agent
+    apt: 
+     name: 
+      - openjdk-11-jre
+      - docker.io
+      - docker-compose
+     state: present  
+  - name: Checking services status on agent
+    service:
+     name: docker 
+     state: started
+  - name: Adding user to group
+    shell: "usermod -aG docker ubuntu"
+    args:
+      executable: /bin/bash
+  - name: Rebooting the agent....
+    shell: "sudo init 6"
+    args:
+      executable: /bin/bash      
+  tags: tag-agent
+
+
